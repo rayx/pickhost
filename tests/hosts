@@ -1,0 +1,24 @@
+
+server-5 = rayx@10.64.4.5 #centos 7.4
+server-5->vm-37 = root,rayx@192.168.122.37 #qemu: virtio-block
+
+[ARM servers]
+server-5 = rayx@10.64.4.5 #centos 7.4
+server-66 = root@10.64.4.66 #ubuntu 16.04
+server-5->vm-176 = root,rayx@192.168.122.176 #qemu: hotplugging
+server-5->vm-37 = root,rayx@192.168.122.37 #qemu: virtio-block
+server-5->vm-176->nested-vm! = root,rayx@191.168.56.18 #nested-vm
+
+[Benchmarking]
+arm-server! = rayx,root@10.64.37.55 #Centriq 2400, 192G RAM
+x86-server = rayx,root@10.64.37.51 #Xeon Gold 5118, 192G RAM
+test-client = rayx,root@10.64.37.182
+
+[VMs on My Laptop]
+vm1 = root,rayx@192.168.182.218 #devstack
+vm2 = root@192.168.182.200 #latest kernel
+
+[Google Cloud]
+myserver = rayx@104.199.155.188 #vpn, etc.
+localhost = rayx@127.0.0.1
+
