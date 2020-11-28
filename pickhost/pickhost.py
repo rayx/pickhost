@@ -8,7 +8,7 @@ import os
 import subprocess
 from collections import OrderedDict
 from pypick import Pick
-
+from . import system
 
 class Config:
     """
@@ -16,6 +16,7 @@ class Config:
     caller, or a default one, based on XDG base directory specification.
 
     Args:
+        os: OS object which provides config and cache dir location.
         file: User specified config file
 
     Attributes:
@@ -23,7 +24,8 @@ class Config:
         groups: data returned by parse(). It's an OrderedDict. Key is
             group name, value is hosts in that group.
     """
-    def __init__(self, file=None):
+    def __init__(self, os, file=None):
+        self.os = os
         if file:
             self.file = file
         else:
@@ -170,8 +172,8 @@ class Config:
             FileNotFoundError: Raised if the file doesn't exist and
                 create flag is not True.
         """
-        xdg_dir = self._get_xdg_dir()
-        file = '%s/pickhost/hosts' % xdg_dir
+        config_dir = self.os.config_dir()
+        file = '%s/pickhost/hosts' % config_dir
         if os.path.exists(file):
             return file
         # If it reaches here, the file doesn't exist.
@@ -179,36 +181,12 @@ class Config:
             raise FileNotFoundError(file)
         else:
             # Create the directory if it doesn't exist.
-            dir = '%s/pickhost' % xdg_dir
+            dir = '%s/pickhost' % config_dir
             if not os.path.exists(dir):
                 os.mkdir(dir)
             # Create an empty file.
             open(file, 'w').close()
             return file
-
-    def _get_xdg_dir(self):
-        """
-        Return XDG_CONFIG_HOME environment variable value if its set,
-        otherwiese return its default value: $HOME/.config.
-
-        Returns:
-            str: User config dir.
-
-        Raises:
-            FileNotFoundError: Raised if XDG_CONFIG_HOME is set to a
-                non-existant directory, or if $HOME/.config doesn't exist.
-        """
-        # Return XDG_CONFIG_HOME if it's set.
-        if 'XDG_CONFIG_HOME' in os.environ:
-            dir = os.environ['XDG_CONFIG_HOME']
-            if not os.path.isdir(dir):
-                raise FileNotFoundError('XDG_CONFIG_HOME (%s)' % dir)
-            return dir
-        # Otherwise return $HOME/.config
-        dir = '%s/.config' % os.environ['HOME']
-        if not os.path.isdir(dir):
-            raise FileNotFoundError(dir)
-        return dir
 
 
 class Cache:
@@ -217,9 +195,13 @@ class Cache:
     (the last selected entry) in current implementation. Cache file is
     located based on XDG base directory specification. The function creates
     it if it doesn't exist.
+
+    Args:
+        os: OS object which provides config and cache dir location.
     """
 
-    def __init__(self):
+    def __init__(self, os):
+        self.os = os
         self.file = self._get_cache_file()
 
     def parse(self):
@@ -260,42 +242,16 @@ class Cache:
         Returns:
             str: pathname of cache file.
         """
-        xdg_dir = self._get_xdg_dir()
-        file = '%s/pickhost/hosts' % xdg_dir
+        cache_dir = self.os.cache_dir()
+        file = '%s/pickhost/hosts' % cache_dir
         if not os.path.exists(file):
             # Create the directory if it doesn't exist
-            dir = '%s/pickhost' % xdg_dir
+            dir = '%s/pickhost' % cache_dir
             if not os.path.exists(dir):
                 os.mkdir(dir)
             # Create an empty file
             open(file, 'w').close()
         return file
-
-    def _get_xdg_dir(self):
-        """
-        Return XDG_CACHE_HOME environment variable value if its set,
-        otherwiese return its default value: $HOME/.cache.
-
-        Returns:
-            str: User cache dir.
-
-        Raises:
-            FileNotFoundError: Raised if XDG_CACHE_HOME is set to a
-                non-existant directory, or if $HOME/.cache doesn't exist.
-        """
-        # Return XDG_CACHE_HOME if it's set.
-        if 'XDG_CACHE_HOME' in os.environ:
-            dir = os.environ['XDG_CACHE_HOME']
-            if not os.path.isdir(dir):
-                raise FileNotFoundError('XDG_CACHE_HOME (%s)' % dir)
-            return dir
-
-        # Otherwise return $HOME/.cache, which is the default value of
-        # XDG_CACHE_HOME.
-        dir = '%s/.cache' % os.environ['HOME']
-        if not os.path.isdir(dir):
-            raise FileNotFoundError(dir)
-        return dir
 
 
 class PickHost(Pick):
@@ -313,8 +269,9 @@ class PickHost(Pick):
     def __init__(self, file=None):
         super(PickHost, self).__init__(self.FIELDS,
                                        field_attrs=self.FIELD_ATTS)
+        os = system.OS()
         # Get entries from cache file and add them to a specific group.
-        self.cache = Cache()
+        self.cache = Cache(os)
         cached_entries = self.cache.parse()
         if cached_entries:
             group = self.create_group('', (self.CACHE_FIELDS,
@@ -323,7 +280,7 @@ class PickHost(Pick):
             group.add_entries(cached_entries)
 
         # Config file contains multiple groups. Create and populate them.
-        self.config = Config(file=file)
+        self.config = Config(os, file=file)
         for name, entries in self.config.parse().items():
             group = self.create_group(name)
             group.add_entries(entries)

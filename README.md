@@ -25,13 +25,13 @@ To use pickhost, you need to add your hosts to a config file. Pickhost looks for
 So, if this is the first time you run pickhost, you should run the following command to edit the default config file:
 
     $ pickhost -e
-	
+
 As an example you can add the following lines to it:
 
     [ARM servers]
     server-5 = rayx@10.64.4.5 #centos 7.4
     server-66 = root@10.64.4.66 #ubuntu 16.04
-    
+
     [Benchmarking]
     arm-server = rayx,root@10.64.37.55 #Centriq 2400, 192G RAM
     x86-server = rayx,root@10.64.37.51 #Xeon Gold 5118, 192G RAM
@@ -100,12 +100,12 @@ You can define parent/child relationship between hosts. This is particularly use
     server-5->vm-176->nested-vm = root,rayx@191.168.56.18 #nested-vm
     server-5->vm-37 = root,rayx@192.168.122.37 #qemu: virtio-block
     server-66 = root@10.64.4.66 #ubuntu 16.04
-    
+
     [Benchmarking]
     arm-server = rayx,root@10.64.37.55 #Centriq 2400, 192G RAM
     x86-server = rayx,root@10.64.37.51 #Xeon Gold 5118, 192G RAM
     test-client = rayx,root@10.64.37.182
-	
+
 As you may notice, a child host's name contains all its ancestor names, separated by `->`. With this config file pickhost generates a list like the following, which shows the relationship visually and helps you to identify a VM quickly.
 
 ![docs/images/parent_and_child.png](https://github.com/rayx/pickhost/raw/master/docs/images/parent_and_child.png)
@@ -118,7 +118,7 @@ Note that, if entries in a section have parent/child relationship, pickhost dete
     server-5->vm-176 = root,rayx@192.168.122.176 #qemu: hotplugging
     server-5->vm-37 = root,rayx@192.168.122.37 #qemu: virtio-block
     server-5->vm-176->nested-vm = root,rayx@191.168.56.18 #nested-vm
-    
+
     [Benchmarking]
     arm-server = rayx,root@10.64.37.55 #Centriq 2400, 192G RAM
     x86-server = rayx,root@10.64.37.51 #Xeon Gold 5118, 192G RAM
@@ -136,21 +136,46 @@ You can highlight an entry by adding `!` character after the host name. Below is
     server-5->vm-176->nested-vm = root,rayx@191.168.56.18 #nested-vm
     server-5->vm-37 = root,rayx@192.168.122.37 #qemu: virtio-block
     server-66 = root@10.64.4.66 #ubuntu 16.04
-    
+
     [Benchmarking]
     arm-server! = rayx,root@10.64.37.55 #Centriq 2400, 192G RAM
     x86-server = rayx,root@10.64.37.51 #Xeon Gold 5118, 192G RAM
     test-client = rayx,root@10.64.37.182
-	
+
 With this config file pickhost generates a list like this:
 
 ![docs/images/highlighting.png](https://github.com/rayx/pickhost/raw/master/docs/images/highlighting.png)
+
+# Using the tool on macOS 
+
+First make sure python3 is installed on your macOS. 
+
+    $ python3 --version
+
+Then run the command to install the tool:
+
+    $ python3 -m pip install --user pickhost
+
+That will install the package under `~/Library/Python/<version>/lib/python/site-packages/pickhost` and an executable file under `~/Library/Python/<version>/bin`.
+
+Then add the following to your `~/.profile`:
+
+    py3ver=$(python3 --version | awk '{print $2}')
+    py3ver=${py3ver%.*}
+    PATH=$PATH:${HOME}/Library/Python/${py3ver}/bin
+    # Fix locale
+    export LC_ALL=en_US.UTF-8
+    export LANG=en_US.UTF-8
+
+The last two lines fix a common issue on macOS, which is not specific to this tool. You may want to change `en_US` to your language code (e.g. `zh_CN`, etc.)
+
+Then just follow the QuickStart guide above to setup and run the tool. The default config file is located at `~/Library/Application Support/pickhost/config` on macOS.
 
 # Manual
 
      $ pickhost -h
     usage: pickhost [-h] [-f file] [-e]
-    
+
     optional arguments:
       -h, --help  show this help message and exit
       -f file     config file

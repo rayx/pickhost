@@ -1,6 +1,7 @@
+import sys
 import setuptools
 from setuptools.command.test import test as TestCommand
-import sys
+from pickhost import __version__ as version
 
 
 class PyTest(TestCommand):
@@ -22,7 +23,7 @@ with open('README.md', 'r') as f:
 
 setuptools.setup(
     name='pickhost',
-    version='0.1.1',
+    version=version,
     author='Huan Xiong',
     author_email='huan.xiong@outlook.com',
     description=('A simple SSH host manager in terminal'),

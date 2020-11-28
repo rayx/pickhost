@@ -5,3 +5,9 @@ CHANGELOG
 0.1.1: 2018-04-23
 -----------------
 - Initial official (beta) release.
+
+0.2.0: 2020-11-28
+-----------------
+- Fixed config and cache directories on macOS.
+- Updated the doc on how to install and run the tool on macOS.
+- Also updated setup.py to read version from __init__.py.
