@@ -1,6 +1,7 @@
 import argparse
 import sys
 from pickhost import PickHost
+from pickhost import __version__ as version
 
 
 def main():
@@ -9,7 +10,12 @@ def main():
                         help='config file')
     parser.add_argument('-e', dest='edit', action='store_true',
                         help='edit config file rather than show it')
+    parser.add_argument('-v', dest='version', action='store_true',
+                        help='print version')
     args = parser.parse_args()
+    if args.version:
+        print("Pickhost %s" % version)
+        sys.exit(0)
     p = PickHost(args.file)
     if args.edit:
         p.edit()
@@ -23,7 +29,7 @@ def main():
     # be consumed by shell script.
     if result:
         for key, value in result.items():
-            sys.stderr.write('export %s=%s\n' % ('PH_' + key.upper(), value))
+            sys.stderr.write('export %s="%s"\n' % ('PH_' + key.upper(), value))
 
 
 if __name__ == '__main__':
