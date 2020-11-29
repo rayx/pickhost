@@ -1,0 +1,2 @@
+pypick>=0.2.0
+wheel
